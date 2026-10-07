@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Dataset Manager & Upload | SocialPulse Analytics{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-darkcard/40 border border-darkborder/70 p-5 rounded-2xl glass-panel">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-lg bg-brand-500/15 flex items-center justify-center text-brand-400">
+                <i data-lucide="database" class="w-5 h-5"></i>
+            </div>
+            <h1 class="text-2xl font-bold font-display text-white">Dataset Management & CSV Upload</h1>
+        </div>
+        <p class="text-sm text-slate-400 mt-1">
+            Import social media metrics exported from Twitter/X Analytics, Instagram Insights, YouTube Studio, or LinkedIn. Or load built-in high-engagement demo datasets.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- File Upload Section (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+            <!-- Upload Box -->
+            <div class="bg-darkcard border border-darkborder p-6 rounded-2xl glass-panel">
+                <h3 class="text-base font-semibold text-white mb-2 flex items-center space-x-2">
+                    <i data-lucide="upload-cloud" class="w-5 h-5 text-brand-400"></i>
+                    <span>Upload Custom CSV or JSON</span>
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">
+                    Supports exports from all standard analytics dashboards. Automatic column normalization is applied.
+                </p>
+
+                <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data" id="upload-form" class="space-y-4">
+                    <div id="drop-zone" class="border-2 border-dashed border-slate-700 hover:border-brand-500 rounded-xl p-8 text-center bg-slate-900/40 hover:bg-slate-900/80 transition-all cursor-pointer">
+                        <div class="w-12 h-12 rounded-full bg-brand-500/10 text-brand-400 flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="file-up" class="w-6 h-6"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-200">
+                            Drag & drop your <span class="text-brand-400 font-bold">.CSV</span> or <span class="text-brand-400 font-bold">.JSON</span> file here
+                        </p>
+                        <p class="text-xs text-slate-500 mt-1">or click to browse from your computer (up to 16 MB)</p>
+                        <input type="file" name="file" id="file-input" accept=".csv,.json" class="hidden" required>
+                    </div>
+
+                    <div id="file-preview-card" class="hidden p-3 rounded-lg bg-brand-500/10 border border-brand-500/20 flex items-center justify-between">
+                        <div class="flex items-center space-x-2 text-xs text-brand-300">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span id="selected-file-name" class="font-medium">filename.csv</span>
+                        </div>
+                        <button type="button" onclick="clearSelectedFile()" class="text-slate-400 hover:text-white">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <a href="{{ url_for('download_template') }}" class="text-xs text-brand-400 hover:text-brand-300 flex items-center space-x-1">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                            <span>Download Sample CSV Template</span>
+                        </a>
+
+                        <button type="submit" id="submit-btn" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 transition flex items-center space-x-1.5">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                            <span>Process & View Analytics</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Built-in Demo Datasets -->
+            <div class="bg-darkcard border border-darkborder p-6 rounded-2xl glass-panel">
+                <h3 class="text-base font-semibold text-white mb-2 flex items-center space-x-2">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-amber-400"></i>
+                    <span>Pre-loaded Demo Datasets</span>
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">
+                    Switch between rich scenario datasets with a single click:
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Preset 1 -->
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-brand-500/50 transition flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-white">ApexActive Brand</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300">Multi-Channel</span>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                Global athletic brand campaign covering Instagram reels, TikTok challenges, YouTube tech breakdowns, and Twitter drops.
+                            </p>
+                        </div>
+                        <button onclick="loadPresetDataset('brand_campaign')" class="mt-4 w-full py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-brand-300 rounded-lg border border-slate-700 transition">
+                            Load Brand Campaign
+                        </button>
+                    </div>
+
+                    <!-- Preset 2 -->
+                    <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-cyan-500/50 transition flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold text-white">DevPulse AI Launch</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300">B2B SaaS</span>
+                            </div>
+                            <p class="text-xs text-slate-400">
+                                Product Hunt #1 product launch campaign, LinkedIn leadership posts, and technical developer tutorials.
+                            </p>
+                        </div>
+                        <button onclick="loadPresetDataset('tech_launch')" class="mt-4 w-full py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-cyan-300 rounded-lg border border-slate-700 transition">
+                            Load SaaS Launch
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Format Guide & Auto Column Detection (5 cols) -->
+        <div class="lg:col-span-5 space-y-4">
+            <div class="bg-darkcard border border-darkborder p-5 rounded-2xl glass-panel">
+                <h3 class="text-sm font-semibold text-white mb-3 flex items-center space-x-2">
+                    <i data-lucide="help-circle" class="w-4 h-4 text-brand-400"></i>
+                    <span>Smart Column Recognition</span>
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">
+                    Our ingestion engine automatically maps any variation of standard column headers:
+                </p>
+
+                <div class="space-y-2.5 text-xs">
+                    <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+                        <span class="text-brand-300 font-semibold font-mono block">content / caption / text</span>
+                        <span class="text-slate-400 text-[11px]">The text body of the post, tweet, or video description.</span>
+                    </div>
+
+                    <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+                        <span class="text-brand-300 font-semibold font-mono block">platform / network / source</span>
+                        <span class="text-slate-400 text-[11px]">Instagram, X, YouTube, LinkedIn, TikTok, Facebook.</span>
+                    </div>
+
+                    <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+                        <span class="text-brand-300 font-semibold font-mono block">likes, comments, shares, views</span>
+                        <span class="text-slate-400 text-[11px]">Numeric engagement quantities. Missing values are filled as 0.</span>
+                    </div>
+
+                    <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+                        <span class="text-brand-300 font-semibold font-mono block">date / timestamp / created_at</span>
+                        <span class="text-slate-400 text-[11px]">ISO format, standard date strings, or relative time.</span>
+                    </div>
+
+                    <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+                        <span class="text-brand-300 font-semibold font-mono block">type / media_type / format</span>
+                        <span class="text-slate-400 text-[11px]">Carousel, Reel, Video, Image, Text.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const filePreview = document.getElementById('file-preview-card');
+    const fileNameSpan = document.getElementById('selected-file-name');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-brand-500', 'bg-slate-900/80');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-brand-500', 'bg-slate-900/80');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-brand-500', 'bg-slate-900/80');
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect(fileInput.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            handleFileSelect(fileInput.files[0]);
+        }
+    });
+
+    function handleFileSelect(file) {
+        fileNameSpan.innerText = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        filePreview.classList.remove('hidden');
+    }
+
+    function clearSelectedFile() {
+        fileInput.value = '';
+        filePreview.classList.add('hidden');
+    }
+
+    async function loadPresetDataset(preset) {
+        try {
+            const res = await fetch('/api/load-preset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ preset })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                window.location.href = "{{ url_for('dashboard') }}";
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (e) {
+            alert("Request failed: " + e);
+        }
+    }
+</script>
+{% endblock %}

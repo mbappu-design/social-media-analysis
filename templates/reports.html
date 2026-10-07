@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Report & Export | SocialPulse Analytics{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Top Action Bar (Hidden when printing) -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-darkcard/40 border border-darkborder/70 p-5 rounded-2xl glass-panel no-print">
+        <div>
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400">
+                    <i data-lucide="file-check" class="w-5 h-5"></i>
+                </div>
+                <h1 class="text-2xl font-bold font-display text-white">Executive Analytics Report</h1>
+            </div>
+            <p class="text-sm text-slate-400 mt-1">
+                Consolidated audit report for dataset <strong class="text-slate-200">{{ dataset_name }}</strong>
+            </p>
+        </div>
+
+        <!-- Export Actions -->
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ url_for('export_csv') }}" class="text-xs px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center space-x-1.5 shadow-sm">
+                <i data-lucide="table" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>Export CSV</span>
+            </a>
+            <a href="{{ url_for('export_report_json') }}" class="text-xs px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center space-x-1.5 shadow-sm">
+                <i data-lucide="file-code" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Export JSON</span>
+            </a>
+            <button onclick="window.print()" class="text-xs px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold shadow-lg shadow-brand-500/20 transition flex items-center space-x-1.5">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span>Print / Save PDF</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Printable Report Container -->
+    <div class="bg-darkcard border border-darkborder p-8 rounded-2xl glass-panel space-y-8">
+        <!-- Report Header -->
+        <div class="border-b border-darkborder pb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+            <div>
+                <span class="text-xs uppercase font-extrabold tracking-widest text-brand-400">Audit & Performance Brief</span>
+                <h2 class="text-3xl font-extrabold text-white mt-1">{{ dataset_name }}</h2>
+                <p class="text-xs text-slate-400 mt-1">Cross-platform digital footprint analysis</p>
+            </div>
+            <div class="text-right text-xs text-slate-400">
+                <div>Generated: <span class="text-slate-200 font-medium">{{ analytics.kpis.best_posting_day if analytics.kpis else 'Today' }}</span></div>
+                <div>Status: <span class="text-emerald-400 font-semibold">Audit Complete</span></div>
+            </div>
+        </div>
+
+        <!-- KPI Grid -->
+        <div>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 mb-4 flex items-center space-x-2">
+                <i data-lucide="trending-up" class="w-4 h-4 text-brand-400"></i>
+                <span>Key Aggregate Performance Indicators</span>
+            </h3>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                    <span class="text-xs text-slate-400 block">Total Reach & Impressions</span>
+                    <span class="text-xl font-bold text-white mt-1 block">
+                        {{ "{:,}".format(analytics.kpis.total_impressions if analytics.kpis else 0) }}
+                    </span>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                    <span class="text-xs text-slate-400 block">Total Audience Interactions</span>
+                    <span class="text-xl font-bold text-white mt-1 block">
+                        {{ "{:,}".format(analytics.kpis.total_engagements if analytics.kpis else 0) }}
+                    </span>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                    <span class="text-xs text-slate-400 block">Avg. Engagement Rate</span>
+                    <span class="text-xl font-bold text-emerald-400 mt-1 block">
+                        {{ analytics.kpis.avg_engagement_rate if analytics.kpis else 0 }}%
+                    </span>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                    <span class="text-xs text-slate-400 block">Total Published Posts</span>
+                    <span class="text-xl font-bold text-white mt-1 block">
+                        {{ analytics.kpis.total_posts if analytics.kpis else 0 }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channel Performance Matrix -->
+        <div>
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-300 mb-4 flex items-center space-x-2">
+                <i data-lucide="network" class="w-4 h-4 text-purple-400"></i>
+                <span>Channel Efficiency Matrix</span>
+            </h3>
+
+            <div class="overflow-x-auto rounded-xl border border-darkborder">
+                <table class="w-full text-left text-xs text-slate-300">
+                    <thead class="bg-slate-800/80 text-slate-400 uppercase tracking-wider text-[11px] border-b border-darkborder">
+                        <tr>
+                            <th class="py-3 px-4">Platform Channel</th>
+                            <th class="py-3 px-4 text-right">Volume</th>
+                            <th class="py-3 px-4 text-right">Impressions</th>
+                            <th class="py-3 px-4 text-right">Likes</th>
+                            <th class="py-3 px-4 text-right">Shares</th>
+                            <th class="py-3 px-4 text-right">Avg. Rate</th>
+                            <th class="py-3 px-4 text-right">Sentiment Index</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-darkborder/50">
+                        {% if analytics.platforms %}
+                            {% for p in analytics.platforms %}
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="py-3 px-4 font-semibold text-white">{{ p.platform }}</td>
+                                    <td class="py-3 px-4 text-right">{{ p.posts }}</td>
+                                    <td class="py-3 px-4 text-right">{{ "{:,}".format(p.impressions) }}</td>
+                                    <td class="py-3 px-4 text-right">{{ "{:,}".format(p.likes) }}</td>
+                                    <td class="py-3 px-4 text-right">{{ "{:,}".format(p.shares) }}</td>
+                                    <td class="py-3 px-4 text-right font-semibold text-emerald-400">{{ p.avg_engagement_rate }}%</td>
+                                    <td class="py-3 px-4 text-right font-medium {% if p.avg_sentiment >= 0.1 %}text-emerald-400{% elif p.avg_sentiment <= -0.1 %}text-rose-400{% else %}text-slate-400{% endif %}">
+                                        {{ "+%.2f"|format(p.avg_sentiment) if p.avg_sentiment > 0 else "%.2f"|format(p.avg_sentiment) }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-6 text-slate-500">No channel metrics available.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Sentiment & Emotional Diagnostic -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 print-break-inside">
+            <div class="p-5 rounded-xl bg-slate-900/60 border border-slate-800">
+                <h4 class="text-xs uppercase font-semibold tracking-wider text-slate-300 mb-3">Sentiment Tone Distribution</h4>
+                <div class="space-y-3">
+                    {% set pos = analytics.sentiment_distribution.Positive if analytics.sentiment_distribution else 0 %}
+                    {% set neu = analytics.sentiment_distribution.Neutral if analytics.sentiment_distribution else 0 %}
+                    {% set neg = analytics.sentiment_distribution.Negative if analytics.sentiment_distribution else 0 %}
+                    {% set total = (pos + neu + neg) if (pos + neu + neg) > 0 else 1 %}
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-emerald-400 font-medium">Positive Tone</span>
+                            <span class="text-slate-300 font-semibold">{{ pos }} ({{ (pos/total*100)|round(1) }}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2">
+                            <div class="bg-emerald-500 h-2 rounded-full" style="width: {{ (pos/total*100) }}%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-400 font-medium">Neutral / Informative</span>
+                            <span class="text-slate-300 font-semibold">{{ neu }} ({{ (neu/total*100)|round(1) }}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2">
+                            <div class="bg-slate-400 h-2 rounded-full" style="width: {{ (neu/total*100) }}%"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-rose-400 font-medium">Negative / Critical</span>
+                            <span class="text-slate-300 font-semibold">{{ neg }} ({{ (neg/total*100)|round(1) }}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-800 rounded-full h-2">
+                            <div class="bg-rose-500 h-2 rounded-full" style="width: {{ (neg/total*100) }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Optimization Recommendations -->
+            <div class="p-5 rounded-xl bg-slate-900/60 border border-slate-800">
+                <h4 class="text-xs uppercase font-semibold tracking-wider text-slate-300 mb-3">Strategic Action Items</h4>
+                <ul class="space-y-2 text-xs text-slate-300">
+                    <li class="flex items-start space-x-2">
+                        <span class="text-emerald-400 font-bold">✓</span>
+                        <span>Schedule high-priority announcements on <strong>{{ analytics.kpis.best_posting_day }} around {{ analytics.kpis.best_posting_hour }}</strong> for maximum organic reach.</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="text-emerald-400 font-bold">✓</span>
+                        <span>Prioritize Video and Carousel formats which drive higher engagement rates compared to static text.</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="text-emerald-400 font-bold">✓</span>
+                        <span>Maintain clear Call to Actions (CTAs) and community discussion questions across top platforms.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

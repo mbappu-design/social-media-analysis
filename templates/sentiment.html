@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Sentiment & Emotion Lab | SocialPulse Analytics{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-darkcard/40 border border-darkborder/70 p-5 rounded-2xl glass-panel">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-lg bg-pink-500/15 flex items-center justify-center text-pink-400">
+                <i data-lucide="smile" class="w-5 h-5"></i>
+            </div>
+            <h1 class="text-2xl font-bold font-display text-white">Sentiment & Emotion Intelligence</h1>
+        </div>
+        <p class="text-sm text-slate-400 mt-1">
+            Evaluate consumer emotion, polarity scores, tone subjectivity, and dominant mood in real-time across posts, tweets, and comments.
+        </p>
+    </div>
+
+    <!-- Analyzer Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Input & Controls (7 cols) -->
+        <div class="lg:col-span-7 space-y-4">
+            <div class="bg-darkcard border border-darkborder p-5 rounded-2xl glass-panel">
+                <div class="flex items-center justify-between pb-3 border-b border-darkborder">
+                    <span class="text-sm font-semibold text-white flex items-center space-x-2">
+                        <i data-lucide="edit-3" class="w-4 h-4 text-brand-400"></i>
+                        <span>Input Post or Comment Text</span>
+                    </span>
+                    <span class="text-xs text-slate-400" id="char-counter">0 chars</span>
+                </div>
+
+                <div class="mt-3">
+                    <textarea id="sentiment-input" rows="5" class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl p-3.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 transition" placeholder="Type or paste any tweet, Instagram caption, customer review, or comment here..."></textarea>
+                </div>
+
+                <!-- Quick Test Prompts -->
+                <div class="mt-3">
+                    <span class="text-xs text-slate-400 font-medium block mb-2">Try quick examples:</span>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setExampleText('viral')" class="text-xs px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/20 transition">
+                            ✨ Viral Praise
+                        </button>
+                        <button onclick="setExampleText('complaint')" class="text-xs px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-rose-300 border border-rose-500/20 transition">
+                            ⚠️ Critical Bug / Anger
+                        </button>
+                        <button onclick="setExampleText('launch')" class="text-xs px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/20 transition">
+                            🚀 Anticipation / Launch
+                        </button>
+                        <button onclick="setExampleText('neutral')" class="text-xs px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+                            📰 Standard Update
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex items-center justify-end">
+                    <button onclick="runSentimentAnalysis()" id="analyze-btn" class="bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 transition flex items-center space-x-2">
+                        <i data-lucide="zap" class="w-4 h-4"></i>
+                        <span>Analyze Sentiment Now</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Extracted Keywords & Linguistic Details -->
+            <div class="bg-darkcard border border-darkborder p-5 rounded-2xl glass-panel">
+                <h3 class="text-sm font-semibold text-white mb-3 flex items-center space-x-2">
+                    <i data-lucide="tag" class="w-4 h-4 text-purple-400"></i>
+                    <span>Key Extracted Terms & Subjectivity</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        <span class="text-xs text-slate-400 block mb-1">Subjectivity Meter:</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="flex-1 bg-slate-800 rounded-full h-2">
+                                <div id="subjectivity-bar" class="bg-brand-500 h-2 rounded-full transition-all" style="width: 20%;"></div>
+                            </div>
+                            <span id="subjectivity-val" class="text-xs font-bold text-slate-200">0.20</span>
+                        </div>
+                        <span class="text-[11px] text-slate-500 mt-1 block">0 = Highly Objective, 1 = Deeply Opinionated</span>
+                    </div>
+
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                        <span class="text-xs text-slate-400 block mb-1">Dominant Emotion:</span>
+                        <span id="dominant-emotion-badge" class="inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                            Calm / Neutral
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <span class="text-xs text-slate-400 block mb-2">Detected Meaningful Keywords:</span>
+                    <div id="keywords-container" class="flex flex-wrap gap-2">
+                        <span class="text-xs text-slate-500">Run analysis to extract keywords</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results & Visualizations (5 cols) -->
+        <div class="lg:col-span-5 space-y-4">
+            <!-- Sentiment Gauge Card -->
+            <div class="bg-darkcard border border-darkborder p-5 rounded-2xl glass-panel text-center">
+                <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-2">Compound Sentiment Polarity</span>
+                
+                <div class="my-4">
+                    <div class="text-4xl font-extrabold font-display" id="sentiment-score-display">+0.75</div>
+                    <div class="mt-2">
+                        <span id="sentiment-label-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                            Positive Tone
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tri-color distribution bar -->
+                <div class="mt-5 space-y-2">
+                    <div class="flex h-3 rounded-full overflow-hidden bg-slate-800">
+                        <div id="bar-pos" class="bg-emerald-500 transition-all" style="width: 70%;" title="Positive"></div>
+                        <div id="bar-neu" class="bg-slate-400 transition-all" style="width: 25%;" title="Neutral"></div>
+                        <div id="bar-neg" class="bg-rose-500 transition-all" style="width: 5%;" title="Negative"></div>
+                    </div>
+                    <div class="flex justify-between text-[11px] text-slate-400 px-1">
+                        <span class="text-emerald-400 font-medium">Positive: <span id="pct-pos">70%</span></span>
+                        <span class="text-slate-300 font-medium">Neutral: <span id="pct-neu">25%</span></span>
+                        <span class="text-rose-400 font-medium">Negative: <span id="pct-neg">5%</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emotion Breakdown Radar/Bar -->
+            <div class="bg-darkcard border border-darkborder p-5 rounded-2xl glass-panel">
+                <div class="pb-3 border-b border-darkborder">
+                    <h3 class="text-sm font-semibold text-white flex items-center space-x-2">
+                        <i data-lucide="heart" class="w-4 h-4 text-pink-400"></i>
+                        <span>Emotional Spectrum Profile</span>
+                    </h3>
+                </div>
+                <div class="pt-4 h-56">
+                    <canvas id="liveEmotionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let liveEmotionChart;
+
+    const sampleTexts = {
+        viral: "I am absolutely blown away by this new release! The sleek performance and lightning speed make everyday tasks an absolute joy. Truly the best upgrade of the year! 🔥❤️ #LoveIt",
+        complaint: "Terrible experience with the latest update. The app keeps crashing every 5 minutes and customer support is completely useless. Really disappointed and frustrated! 😡 #Broken",
+        launch: "Huge milestone! Tomorrow morning at 10 AM we will reveal the next generation of our creator suite. Can't wait for everyone to experience the future! 🚀👀 #ComingSoon",
+        neutral: "The quarterly community forum will take place on Wednesday via standard zoom bridge. Agenda items and notes have been posted to the portal."
+    };
+
+    function setExampleText(key) {
+        const text = sampleTexts[key] || "";
+        document.getElementById('sentiment-input').value = text;
+        updateCharCounter();
+        runSentimentAnalysis();
+    }
+
+    function updateCharCounter() {
+        const text = document.getElementById('sentiment-input').value;
+        document.getElementById('char-counter').innerText = `${text.length} chars`;
+    }
+
+    document.getElementById('sentiment-input').addEventListener('input', updateCharCounter);
+
+    async function runSentimentAnalysis() {
+        const text = document.getElementById('sentiment-input').value;
+        if (!text.trim()) return;
+
+        const btn = document.getElementById('analyze-btn');
+        btn.innerHTML = `<span class="animate-spin inline-block mr-2">⚙️</span> Analyzing...`;
+
+        try {
+            const res = await fetch('/api/analyze-sentiment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+            updateSentimentUI(data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            btn.innerHTML = `<i data-lucide="zap" class="w-4 h-4"></i><span>Analyze Sentiment Now</span>`;
+            lucide.createIcons();
+        }
+    }
+
+    function updateSentimentUI(data) {
+        // Polarity score
+        const scoreElem = document.getElementById('sentiment-score-display');
+        const badgeElem = document.getElementById('sentiment-label-badge');
+        
+        const score = data.compound;
+        scoreElem.innerText = (score > 0 ? '+' : '') + score.toFixed(2);
+
+        if (data.label === 'Positive') {
+            scoreElem.className = 'text-4xl font-extrabold font-display text-emerald-400';
+            badgeElem.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+            badgeElem.innerText = 'Positive Sentiment';
+        } else if (data.label === 'Negative') {
+            scoreElem.className = 'text-4xl font-extrabold font-display text-rose-400';
+            badgeElem.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30';
+            badgeElem.innerText = 'Negative Sentiment';
+        } else {
+            scoreElem.className = 'text-4xl font-extrabold font-display text-slate-300';
+            badgeElem.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-700/60 text-slate-300 border border-slate-600';
+            badgeElem.innerText = 'Neutral Sentiment';
+        }
+
+        // Percentages
+        document.getElementById('bar-pos').style.width = `${data.positive_pct}%`;
+        document.getElementById('bar-neu').style.width = `${data.neutral_pct}%`;
+        document.getElementById('bar-neg').style.width = `${data.negative_pct}%`;
+
+        document.getElementById('pct-pos').innerText = `${data.positive_pct}%`;
+        document.getElementById('pct-neu').innerText = `${data.neutral_pct}%`;
+        document.getElementById('pct-neg').innerText = `${data.negative_pct}%`;
+
+        // Subjectivity & Dominant Emotion
+        document.getElementById('subjectivity-bar').style.width = `${Math.min(100, data.subjectivity * 100)}%`;
+        document.getElementById('subjectivity-val').innerText = data.subjectivity.toFixed(2);
+        document.getElementById('dominant-emotion-badge').innerText = data.dominant_emotion;
+
+        // Keywords
+        const kwContainer = document.getElementById('keywords-container');
+        if (data.keywords && data.keywords.length > 0) {
+            kwContainer.innerHTML = data.keywords.map(kw => 
+                `<span class="text-xs px-2.5 py-1 rounded-lg bg-brand-500/10 text-brand-300 border border-brand-500/20 font-medium">#${kw}</span>`
+            ).join('');
+        } else {
+            kwContainer.innerHTML = `<span class="text-xs text-slate-500">No specific keywords detected</span>`;
+        }
+
+        // Emotion chart update
+        updateEmotionChart(data.emotions);
+    }
+
+    function updateEmotionChart(emotions) {
+        const labels = Object.keys(emotions || {});
+        const values = Object.values(emotions || {});
+
+        const ctx = document.getElementById('liveEmotionChart')?.getContext('2d');
+        if (!ctx) return;
+
+        if (liveEmotionChart) liveEmotionChart.destroy();
+
+        liveEmotionChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Emotion Intensity',
+                    data: values,
+                    backgroundColor: [
+                        'rgba(52, 211, 153, 0.7)',
+                        'rgba(56, 189, 248, 0.7)',
+                        'rgba(251, 191, 36, 0.7)',
+                        'rgba(244, 63, 94, 0.7)',
+                        'rgba(148, 163, 184, 0.7)'
+                    ],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, color: '#94a3b8' },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        setExampleText('viral');
+    });
+</script>
+{% endblock %}
